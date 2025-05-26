@@ -1,0 +1,46 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: gradle
+
+      - name: Conceder permissão para wrapper
+        run: chmod +x gradlew
+
+      - name: Build do projeto
+        run: ./gradlew build
+
+      - name: Rodar testes
+        run: ./gradlew testDebugUnitTest
+
+      - name: Verificar lint
+        run: ./gradlew lint
+
+      # (Opcional) Geração do APK para debug
+      - name: Gerar APK debug
+        run: ./gradlew assembleDebug
+
+      # (Opcional) Fazer upload do APK como artefato do workflow
+      - name: Upload do APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-debug.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
